@@ -102,8 +102,7 @@ describe("3. 페이지당 상품 수 선택", () => {
     const limitSelect = document.querySelector("#limit-select");
     await userEvent.selectOptions(limitSelect, "10");
 
-    await waitFor(
-      () => console.log(document.body.innerHTML),
+    await waitFor(() =>
       expect(
         screen.queryByRole("heading", {
           level: 3,
@@ -112,8 +111,11 @@ describe("3. 페이지당 상품 수 선택", () => {
       ).not.toBeInTheDocument(),
     );
 
-    console.log("ㅇㅇㅇㅇㅇㅇㅇ", document.body.innerHTML);
-    expect(document.querySelectorAll(".product-card").length).toBe(10);
+    //expect(document.querySelectorAll(".product-card").length).toBe(10);
+    await waitFor(() => {
+      const productCards = document.querySelectorAll(".product-card");
+      expect(productCards).toHaveLength(10);
+    });
   });
 });
 

@@ -31,8 +31,7 @@ const totalCount = (total) => `
         </div>
     `;
 
-export const HomePage = ({ products, total, loading, limit }) => {
-  console.log(limit);
+export const HomePage = ({ products, total, loading, limit, sort }) => {
   return `
     <div class="min-h-screen bg-gray-50">
       <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -88,8 +87,7 @@ export const HomePage = ({ products, total, loading, limit }) => {
               <!-- 페이지당 상품 수 -->
               <div class="flex items-center gap-2">
                 <label class="text-sm text-gray-600">개수:</label>
-                <select id="limit-select"
-                        class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                <select id="limit-select" class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                   <option value="10" ${limit === 10 ? "selected" : ""}>10개</option>
                   <option value="20" ${limit === 20 ? "selected" : ""}>20개</option>
                   <option value="50" ${limit === 50 ? "selected" : ""}>50개</option>
@@ -101,15 +99,15 @@ export const HomePage = ({ products, total, loading, limit }) => {
                 <label class="text-sm text-gray-600">정렬:</label>
                 <select id="sort-select" class="text-sm border border-gray-300 rounded px-2 py-1
                              focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                  <option value="price_asc" selected="">가격 낮은순</option>
-                  <option value="price_desc">가격 높은순</option>
-                  <option value="name_asc">이름순</option>
-                  <option value="name_desc">이름 역순</option>
+                  <option value="price_asc" ${sort === "price_asc" ? "selected" : ""}>가격 낮은순</option>
+                  <option value="price_desc" ${sort === "price_desc" ? "selected" : ""}>가격 높은순</option>
+                  <option value="name_asc" ${sort === "name_asc" ? "selected" : ""}>이름순</option>
+                  <option value="name_desc" ${sort === "name_desc" ? "selected" : ""}>이름 역순</option>
                 </select>
               </div>
             </div>
           </div>
-        </div>
+          </div>
         <!-- 상품 목록 -->
         <div class="mb-6">
           <div>
@@ -122,10 +120,11 @@ export const HomePage = ({ products, total, loading, limit }) => {
                     ? LoadingUIList
                     : products
                         .map(
-                          (product) => `
+                          (product) =>
+                            `
                          <!-- 상품 그리드 -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
-                   data-product-id=${product.id}>
+                   data-product-id=${product.productId}>
                 <!-- 상품 이미지 -->
                 <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
                   <img src="${product.image}"
@@ -146,7 +145,7 @@ export const HomePage = ({ products, total, loading, limit }) => {
                   </div>
                   <!-- 장바구니 버튼 -->
                   <button class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md
-                         hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id=${product.id}>
+                         hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id=${product.productId}>
                     장바구니 담기
                   </button>
                 </div>
