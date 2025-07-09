@@ -1,5 +1,6 @@
 import { HomePage } from "./pages/HomePage.js";
 import { getProducts } from "./api/productApi.js";
+//import { ProductCard } from "./pages/components/ProductCard.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>

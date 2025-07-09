@@ -1,3 +1,6 @@
+import { Footer } from "./components/Footer";
+import { Header } from "./components/Header";
+import { ProductCard } from "./components/ProductCard";
 const LoadingUI = `
  <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
       <div class="aspect-square bg-gray-200"></div>
@@ -34,24 +37,7 @@ const totalCount = (total) => `
 export const HomePage = ({ products, total, loading, limit, sort }) => {
   return `
     <div class="min-h-screen bg-gray-50">
-      <header class="bg-white shadow-sm sticky top-0 z-40">
-        <div class="max-w-md mx-auto px-4 py-4">
-          <div class="flex items-center justify-between">
-            <h1 class="text-xl font-bold text-gray-900">
-              <a href="/" data-link="">쇼핑몰</a>
-            </h1>
-            <div class="flex items-center space-x-2">
-              <!-- 장바구니 아이콘 -->
-              <button id="cart-icon-btn" class="relative p-2 text-gray-700 hover:text-gray-900 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      ${Header()}
       <main class="max-w-md mx-auto px-4 py-4">
         <!-- 검색 및 필터 -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
@@ -111,58 +97,16 @@ export const HomePage = ({ products, total, loading, limit, sort }) => {
         <!-- 상품 목록 -->
         <div class="mb-6">
           <div>
-          ${loading ? "" : totalCount(total)}
+          ${loading ? "총 0개의 상품" : totalCount(total)}
             <!-- 상품 그리드 -->
             <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
               <!-- 로딩 스켈레톤 -->
-                ${
-                  loading
-                    ? LoadingUIList
-                    : products
-                        .map(
-                          (product) =>
-                            `
-                         <!-- 상품 그리드 -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
-                   data-product-id=${product.productId}>
-                <!-- 상품 이미지 -->
-                <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
-                  <img src="${product.image}"
-                       alt="${product.title}"
-                       class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                       loading="lazy">
-                </div>
-                <!-- 상품 정보 -->
-                <div class="p-3">
-                  <div class="cursor-pointer product-info mb-3">
-                    <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
-                      ${product.title}
-                    </h3>
-                    <p class="text-xs text-gray-500 mb-2">${product.brand}</p>
-                    <p class="text-lg font-bold text-gray-900">
-                      ${product.lprice}원
-                    </p>
-                  </div>
-                  <!-- 장바구니 버튼 -->
-                  <button class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md
-                         hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id=${product.productId}>
-                    장바구니 담기
-                  </button>
-                </div>
-              </div>
-              `,
-                        )
-                        .join("")
-                }
+              ${loading ? LoadingUIList : products.map(ProductCard).join("")}
               ${loading ? loadingText : ""}
           </div>
         </div>
       </main>
-      <footer class="bg-white shadow-sm sticky top-0 z-40">
-        <div class="max-w-md mx-auto py-8 text-center text-gray-500">
-          <p>© 2025 항해플러스 프론트엔드 쇼핑몰</p>
-        </div>
-      </footer>
     </div>
+    ${Footer()}
   `;
 };
