@@ -6,10 +6,12 @@ export function ProductCard(product) {
             data-product-id=${product.productId}>
       <!-- 상품 이미지 -->
       <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
-        <img src="${product.image}"
+      <a href="/product/${product.productId}" > 
+      <img src="${product.image}"
               alt="${product.title}"
               class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
               loading="lazy">
+      </a>
       </div>
       <!-- 상품 정보 -->
       <div class="p-3">

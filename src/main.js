@@ -1,6 +1,7 @@
 import { HomePage } from "./pages/HomePage.js";
 import { getCategories, getProducts } from "./api/productApi.js";
 import { ProductCard } from "./pages/components/ProductCard.js";
+import { PageRouter } from "./pages/route/PageRouter.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -24,7 +25,7 @@ let state = {
 function render() {
   const path = window.location.pathname;
   console.log("현재 경로:", path);
-  console.log("렌더링 상태", state);
+  console.log("render을 통해 렌더링 상태", state);
   const root = document.getElementById("root");
   // if (path === "/") {
   root.innerHTML = HomePage({
@@ -157,6 +158,17 @@ function attachEvents() {
       render();
     });
   }
+
+  // SPA 라우팅 처리 예시
+  document.body.addEventListener("click", (e) => {
+    const anchor = e.target.closest("a");
+    if (anchor && anchor.getAttribute("href")?.startsWith("/product/")) {
+      removeInfiniteScroll(); // SPA 라우팅 시 무한 스크롤 제거
+      e.preventDefault();
+      history.pushState({}, "", anchor.getAttribute("href"));
+      PageRouter(); // 라우터 함수 호출
+    }
+  });
 }
 
 // 데이터 fetch 및 렌더링 함수
@@ -190,51 +202,54 @@ async function fetchAndRender() {
     isFirstLoad: false,
     //categories: [], // 카테고리 데이터 초기화
   };
-  console.log("상품 데이터 로드 완료", state);
+  console.log("fetchAndRender 사용 :: 상품 데이터 로드 완료", state);
   render();
 }
 
 // 무한 스크롤 설정
 let isFetching = false;
+let infiniteScrollHandler = null;
 function setupInfiniteScroll() {
-  window.addEventListener("scroll", async () => {
+  if (infiniteScrollHandler) return; // 이미 등록되어 있으면 중복 방지
+
+  infiniteScrollHandler = async function () {
     if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 && !isFetching && !state.loading) {
       isFetching = true;
       state.loading = true;
 
-      const prevScrollY = window.scrollY; // 현재 스크롤 위치 저장
-      render();
+      const prevScrollY = window.scrollY;
+      //render();
 
       const nextPage = Math.floor(state.products.length / state.limit) + 1;
 
       const data = await getProducts({
         limit: state.limit,
         sort: state.sort,
-        page: nextPage, // <-- 페이지 단위 요청
+        page: nextPage,
       });
 
       state.products = [...state.products, ...data.products];
-      console.log("상품", state.products);
       state.total = data.pagination.total;
       state.loading = false;
       isFetching = false;
 
-      console.log("무한 스크롤 데이터 로드 완료", {
-        nextPage,
-        totalProducts: state.products.length,
-        total: state.total,
-      });
-
       if (state.products.length >= state.total) {
-        console.log("모든 상품을 불러왔습니다.");
-        window.removeEventListener("scroll", setupInfiniteScroll); // 무한 스크롤 이벤트 제거
+        removeInfiniteScroll();
       } else {
-        //console.log("추가 상품 로드 완료, 현재 상품 수:", state.products.length);
         render();
       }
-      window.scrollTo(0, prevScrollY); // 이전 스크롤 위치로 복원
+      window.scrollTo(0, prevScrollY);
     }
-  });
+  };
+
+  window.addEventListener("scroll", infiniteScrollHandler);
+}
+function removeInfiniteScroll() {
+  if (infiniteScrollHandler) {
+    window.scrollTo(0, 0); // 페이지 이동 시 스크롤 위치 초기화
+    window.removeEventListener("scroll", infiniteScrollHandler);
+    infiniteScrollHandler = null;
+  }
 }
 
 // 검색 이벤트 설정
@@ -281,30 +296,36 @@ function searchProductsEvent() {
 async function main() {
   state.isFirstLoad = true;
 
+  if (window.location.pathname === "/") {
+    setupInfiniteScroll();
+  }
   render();
   fetchAndRender();
 
   window.addEventListener("popstate", () => {
-    // 앱 상태 초기화
-    state = {
-      products: [],
-      total: 0,
-      limit: 20,
-      sort: "price_asc",
-      search: "",
-      loading: false,
-      page: 1,
-      isFirstLoad: true,
-      categories: [],
-    };
-    (selectedCategory = {
-      category1: "",
-      category2: "",
-    }),
+    if (window.location.pathname === "/") {
+      state = {
+        products: [],
+        total: 0,
+        limit: 20,
+        sort: "price_asc",
+        search: "",
+        loading: false,
+        page: 1,
+        isFirstLoad: true,
+        categories: [],
+      };
+      selectedCategory = {
+        category1: "",
+        category2: "",
+      };
+      setupInfiniteScroll();
       fetchAndRender();
+    } else {
+      removeInfiniteScroll();
+      PageRouter();
+    }
   });
-
-  setupInfiniteScroll(); // 무한 스크롤 설정
 }
 
 // 애플리케이션 시작
