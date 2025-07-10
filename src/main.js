@@ -19,6 +19,9 @@ let state = {
   sort: "price_asc",
   isFirstLoad: true, // 첫 로드 여부
   categories: [],
+  search: "",
+  cartSelect: false, // 장바구니 선택 상태
+  cartItmes: [], // 장바구니 아이템 목록
 };
 
 // 페이지 렌더링 함수
@@ -27,6 +30,10 @@ function render() {
   console.log("현재 경로:", path);
   console.log("render을 통해 렌더링 상태", state);
   const root = document.getElementById("root");
+  const saveSort = localStorage.getItem("sort");
+  if (saveSort) {
+    state.sort = saveSort; // 로컬 스토리지에서 정렬 상태 불러오기
+  }
   // if (path === "/") {
   root.innerHTML = HomePage({
     ...state, // 상태를 HomePage에 전달
@@ -84,6 +91,7 @@ function attachEvents() {
   if (sortSelect) {
     sortSelect.addEventListener("change", async (e) => {
       state.sort = e.target.value;
+      localStorage.setItem("sort", state.sort); // 정렬 상태를 로컬 스토리지에 저장
       state.loading = true;
       render();
 
@@ -98,6 +106,26 @@ function attachEvents() {
       render();
     });
   }
+
+  document.querySelectorAll(".add-to-cart-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      console.log("장바구니 담기 버튼 클릭됨", e.target.dataset.productId);
+      const productId = e.target.dataset.productId;
+      state.cartItems = state.products.find((p) => p.productId === productId);
+      if (!state.cartItems) {
+        console.error("장바구니에 담을 상품을 찾을 수 없습니다.");
+        return;
+      }
+
+      state.cartSelect = true; // 장바구니 선택 상태 업데이트
+      render(); // 장바구니 선택 상태 반영
+      setTimeout(() => {
+        state.cartSelect = false; // 2초 후 장바구니 선택 상태 초기화
+        render(); // 장바구니 선택 상태 반영
+      }, 2000); // 2초 후 초기화
+      // 장바구니에
+    });
+  });
 
   document.querySelectorAll(".category1-filter-btn").forEach((btn) => {
     btn.addEventListener("click", async () => {
@@ -163,7 +191,7 @@ function attachEvents() {
   document.body.addEventListener("click", (e) => {
     const anchor = e.target.closest("a");
     if (anchor && anchor.getAttribute("href")?.startsWith("/product/")) {
-      removeInfiniteScroll(); // SPA 라우팅 시 무한 스크롤 제거
+      //removeInfiniteScroll(); // SPA 라우팅 시 무한 스크롤 제거
       e.preventDefault();
       history.pushState({}, "", anchor.getAttribute("href"));
       PageRouter(); // 라우터 함수 호출
@@ -207,49 +235,86 @@ async function fetchAndRender() {
 }
 
 // 무한 스크롤 설정
-let isFetching = false;
-let infiniteScrollHandler = null;
-function setupInfiniteScroll() {
-  if (infiniteScrollHandler) return; // 이미 등록되어 있으면 중복 방지
+// let isFetching = false;
+// let infiniteScrollHandler = null;
 
-  infiniteScrollHandler = async function () {
+// function setupInfiniteScroll() {
+//   if (infiniteScrollHandler) return;
+
+//   infiniteScrollHandler = async function () {
+//     if (
+//       window.innerHeight + window.scrollY >= document.body.offsetHeight - 2 &&
+//       !isFetching &&
+//       !state.loading &&
+//       state.products.length < state.total
+//     ) {
+//       isFetching = true;
+//       state.loading = true;
+//       //fetchAndRender(); // fetchAndRender() 호출로 데이터 로드
+//       // 로딩 UI는 필요하다면 별도 처리
+
+//       const nextPage = Math.floor(state.products.length / state.limit) + 1;
+//       const data = await getProducts({
+//         page: nextPage,
+//         limit: state.limit,
+//         sort: state.sort,
+//       });
+
+//       state.products = [...state.products, ...data.products];
+//       state.total = data.pagination.total;
+//       state.loading = false;
+//       isFetching = false;
+
+//       render(); // 전체 render() 대신 이 함수만 호출
+//       if (state.products.length >= state.total) {
+//         removeInfiniteScroll();
+//       }
+//     }
+//   };
+
+//   window.addEventListener("scroll", infiniteScrollHandler);
+// }
+// function removeInfiniteScroll() {
+//   if (infiniteScrollHandler) {
+//     window.scrollTo(0, 0); // 페이지 이동 시 스크롤 위치 초기화
+//     window.removeEventListener("scroll", infiniteScrollHandler);
+//     infiniteScrollHandler = null;
+//   }
+// }
+let isFetching = false;
+function setupInfiniteScroll() {
+  window.addEventListener("scroll", async () => {
     if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 && !isFetching && !state.loading) {
       isFetching = true;
       state.loading = true;
-
-      const prevScrollY = window.scrollY;
-      //render();
-
+      const prevScrollY = window.scrollY; // 현재 스크롤 위치 저장
+      render();
       const nextPage = Math.floor(state.products.length / state.limit) + 1;
-
       const data = await getProducts({
         limit: state.limit,
         sort: state.sort,
-        page: nextPage,
+        page: nextPage, // <-- 페이지 단위 요청
       });
-
       state.products = [...state.products, ...data.products];
+      console.log("상품", state.products);
       state.total = data.pagination.total;
       state.loading = false;
       isFetching = false;
-
+      console.log("무한 스크롤 데이터 로드 완료", {
+        nextPage,
+        totalProducts: state.products.length,
+        total: state.total,
+      });
       if (state.products.length >= state.total) {
-        removeInfiniteScroll();
+        console.log("모든 상품을 불러왔습니다.");
+        window.removeEventListener("scroll", setupInfiniteScroll); // 무한 스크롤 이벤트 제거
       } else {
+        //console.log("추가 상품 로드 완료, 현재 상품 수:", state.products.length);
         render();
       }
-      window.scrollTo(0, prevScrollY);
+      window.scrollTo(0, prevScrollY); // 이전 스크롤 위치로 복원
     }
-  };
-
-  window.addEventListener("scroll", infiniteScrollHandler);
-}
-function removeInfiniteScroll() {
-  if (infiniteScrollHandler) {
-    window.scrollTo(0, 0); // 페이지 이동 시 스크롤 위치 초기화
-    window.removeEventListener("scroll", infiniteScrollHandler);
-    infiniteScrollHandler = null;
-  }
+  });
 }
 
 // 검색 이벤트 설정
@@ -262,6 +327,7 @@ function searchProductsEvent() {
       const query = searchInput.value;
 
       state.loading = true;
+      state.search = query; // 검색어 상태 업데이트
       render();
 
       const data = await getProducts({
@@ -322,7 +388,7 @@ async function main() {
       setupInfiniteScroll();
       fetchAndRender();
     } else {
-      removeInfiniteScroll();
+      //removeInfiniteScroll();
       PageRouter();
     }
   });

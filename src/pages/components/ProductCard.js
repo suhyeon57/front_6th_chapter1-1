@@ -6,12 +6,12 @@ export function ProductCard(product) {
             data-product-id=${product.productId}>
       <!-- 상품 이미지 -->
       <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
-      <a href="/product/${product.productId}" > 
+     
       <img src="${product.image}"
               alt="${product.title}"
               class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
               loading="lazy">
-      </a>
+      
       </div>
       <!-- 상품 정보 -->
       <div class="p-3">
@@ -21,7 +21,7 @@ export function ProductCard(product) {
           </h3>
           <p class="text-xs text-gray-500 mb-2">${product.brand}</p>
           <p class="text-lg font-bold text-gray-900">
-            ${product.lprice}원
+            ${Number(product.lprice).toLocaleString()}원
           </p>
         </div>
         <!-- 장바구니 버튼 -->
