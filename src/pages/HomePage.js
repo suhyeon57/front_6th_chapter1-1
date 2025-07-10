@@ -1,7 +1,7 @@
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { ProductCard } from "./components/ProductCard";
-import { categoryMap } from "../main.js";
+
 const LoadingUI = `
  <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
       <div class="aspect-square bg-gray-200"></div>
@@ -34,7 +34,7 @@ const totalCount = (total) => `
               총 <span class="font-medium text-gray-900">${total}개</span>의 상품
         </div>
     `;
-export const HomePage = ({ isFirstLoad, products, total, loading, limit, sort, selectedCategory }) => {
+export const HomePage = ({ isFirstLoad, products, total, loading, limit, sort, selectedCategory, categories }) => {
   function renderCategoryFilterHTML(isFirstLoad, selectedCategory) {
     console.log("isfirstLoad:", isFirstLoad);
 
@@ -64,7 +64,7 @@ export const HomePage = ({ isFirstLoad, products, total, loading, limit, sort, s
     const category1Buttons = !category1
       ? `
     <div class="flex flex-wrap gap-2">
-      ${Object.keys(categoryMap)
+      ${Object.keys(categories)
         .map(
           (cat1) => `
           <button data-category1="${cat1}" class="category1-filter-btn px-3 py-2 text-sm rounded-md border
@@ -78,22 +78,23 @@ export const HomePage = ({ isFirstLoad, products, total, loading, limit, sort, s
   `
       : ""; // ✅ category1이 선택됐으면 버튼 숨김
 
-    const category2Buttons = category1
-      ? `
-    <div class="flex flex-wrap gap-2">
-      ${categoryMap[category1]
-        .map(
-          (cat2) => `
-        <button data-category1="${category1}" data-category2="${cat2}" class="category2-filter-btn px-3 py-2 text-sm rounded-md border
-          ${cat2 === category2 ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
-          ${cat2}
-        </button>
-      `,
-        )
-        .join("")}
-    </div>
-  `
-      : "";
+    const category2Buttons =
+      category1 && categories[category1]
+        ? `
+      <div class="flex flex-wrap gap-2">
+        ${Object.keys(categories[category1])
+          .map(
+            (cat2) => `
+              <button data-category1="${category1}" data-category2="${cat2}" class="category2-filter-btn px-3 py-2 text-sm rounded-md border
+                ${cat2 === category2 ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                ${cat2}
+              </button>
+            `,
+          )
+          .join("")}
+      </div>
+    `
+        : "";
 
     return `
     <div class="space-y-2">

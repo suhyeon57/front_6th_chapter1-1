@@ -9,6 +9,7 @@ const enableMocking = () =>
     }),
   );
 
+// 초기 상태 설정
 let state = {
   products: [],
   total: 0,
@@ -16,12 +17,14 @@ let state = {
   limit: 20,
   sort: "price_asc",
   isFirstLoad: true, // 첫 로드 여부
+  categories: [],
 };
 
+// 페이지 렌더링 함수
 function render() {
   const path = window.location.pathname;
   console.log("현재 경로:", path);
-
+  console.log("렌더링 상태", state);
   const root = document.getElementById("root");
   // if (path === "/") {
   root.innerHTML = HomePage({
@@ -32,18 +35,14 @@ function render() {
   attachEvents(); // ✅ 이벤트 연결
   searchProductsEvent(); // 검색 이벤트 연결
 }
-//}
 
+// 카테고리 선택 상태
 let selectedCategory = {
   category1: "",
   category2: "",
 };
 
-export const categoryMap = {
-  "생활/건강": ["생활용품", "주방용품", "문구/사무용품"],
-  "디지털/가전": ["태블릿PC", "노트북"],
-};
-
+//limit 변경 시 상품 목록만 다시 렌더링
 function renderProductList() {
   const productContainer = document.getElementById("products-grid"); // 상품 목록 감싸는 div
   if (!productContainer) return;
@@ -56,7 +55,7 @@ function renderProductList() {
     .join("");
 }
 
-//이벤트 연결 함수
+//버튼, limit, sort 클릭 시 동작
 function attachEvents() {
   const limitSelect = document.querySelector("#limit-select");
   const sortSelect = document.getElementById("sort-select");
@@ -67,7 +66,6 @@ function attachEvents() {
 
       state.limit = parseInt(e.target.value);
       state.loading = true;
-      //renderLoadingUI(); // 또는 로딩 표시 (선택)
 
       const data = await getProducts({
         limit: state.limit,
@@ -80,21 +78,6 @@ function attachEvents() {
 
       renderProductList(); // ✅ 전체가 아닌 목록만 다시 그림
       console.log("limitSelect 이벤트 발생 후 상태", state);
-
-      // state.loading = true;
-      // render();
-      // console.log("limitSelect 이벤트 발생 후 상태", state);
-
-      // const data = await getProducts({
-      //   limit: state.limit,
-      //   sort: state.sort,
-      // });
-
-      // state.products = data.products;
-      // state.total = data.pagination.total;
-      // state.loading = false;
-      // render();
-      // console.log("limitSelect 이벤트 발생 후 상태", state);
     });
   }
   if (sortSelect) {
@@ -120,6 +103,7 @@ function attachEvents() {
       selectedCategory.category1 = btn.dataset.category1;
       selectedCategory.category2 = "";
       state.loading = true;
+      console.log("카테고리1 선택됨:", selectedCategory.category1);
       render();
 
       const data = await getProducts({
@@ -131,6 +115,7 @@ function attachEvents() {
       state.products = data.products;
       state.total = data.pagination.total;
       state.loading = false;
+      state.categories = await getCategories(); // 카테고리 데이터 fetch
       render(); // 👉 여기서 2depth 버튼 생김
     });
   });
@@ -174,6 +159,7 @@ function attachEvents() {
   }
 }
 
+// 데이터 fetch 및 렌더링 함수
 async function fetchAndRender() {
   state.loading = true;
   state.total = 0; // 로딩 시작 시 0으로 초기화
@@ -192,15 +178,23 @@ async function fetchAndRender() {
       search: state.search,
     }),
   ]);
+
+  const categories = await getCategories(); // 카테고리 데이터 fetch
+  state.categories = categories; // 상태에 저장
+
   state = {
     ...state,
     products,
     total,
     loading: false,
     isFirstLoad: false,
+    //categories: [], // 카테고리 데이터 초기화
   };
+  console.log("상품 데이터 로드 완료", state);
   render();
 }
+
+// 무한 스크롤 설정
 let isFetching = false;
 function setupInfiniteScroll() {
   window.addEventListener("scroll", async () => {
@@ -243,6 +237,7 @@ function setupInfiniteScroll() {
   });
 }
 
+// 검색 이벤트 설정
 function searchProductsEvent() {
   const searchInput = document.getElementById("search-input");
 
@@ -282,67 +277,34 @@ function searchProductsEvent() {
   });
 }
 
+// 애플리케이션 시작
 async function main() {
-  // state.isFirstLoad = true;
-  // state.loading = true;
-  // render();
-  // state.isFirstLoad = false;
-  // console.log("렌더링 완료1", state);
-  // const data = await getProducts({
-  //   limit: state.limit,
-  //   sort: state.sort,
-  //   ...selectedCategory,
-  // });
-
-  // state.products = data.products;
-  // state.total = data.pagination.total;
-  // state.loading = false;
-  // render();
-  // console.log("렌더링 완료2", state);
-
-  // window.addEventListener("popstate", () => {
-  //   // 앱 상태 초기화
-  //   state = {
-  //     products: [],
-  //     total: 0,
-  //     loading: false,
-  //     limit: 20,
-  //     sort: "price_asc",
-  //     isFirstLoad: true,
-  //   };
-  // });
-
   state.isFirstLoad = true;
+
   render();
   fetchAndRender();
 
-  await getCategories().then((categories) => {
-    console.log("카테고리 데이터:", categories);
-  });
-
-  // popstate 이벤트 리스너 추가 (브라우저 뒤로가기/앞으로가기 및 테스트에서 사용)
   window.addEventListener("popstate", () => {
     // 앱 상태 초기화
     state = {
       products: [],
       total: 0,
-      categories: [],
       limit: 20,
       sort: "price_asc",
       search: "",
       loading: false,
       page: 1,
-      hasMore: true,
       isFirstLoad: true,
+      categories: [],
     };
-    selectedCategory = {
+    (selectedCategory = {
       category1: "",
       category2: "",
-    };
-    fetchAndRender();
+    }),
+      fetchAndRender();
   });
+
   setupInfiniteScroll(); // 무한 스크롤 설정
-  //attachEvents(); // 👈 꼭 호출!
 }
 
 // 애플리케이션 시작
