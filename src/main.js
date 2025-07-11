@@ -314,7 +314,7 @@ async function fetchAndRender() {
     isFirstLoad: false,
     //categories: [], // 카테고리 데이터 초기화
   };
-  console.log("fetchAndRender 사용 :: 상품 데이터 로드 완료", state);
+  console.log("fetchAndRender 사용 ::: 상품 데이터 로드 완료", state);
   render();
 }
 
