@@ -3,6 +3,7 @@ import { HomePage } from "../HomePage.js";
 import { ProductDetailPage } from "../ProductDetailPage.js";
 import { attachEvents } from "../../main.js";
 import { getRelatedProducts } from "../../main.js";
+import { ErrorPage } from "../ErrorPage.js";
 
 export async function PageRouter() {
   const root = document.getElementById("root");
@@ -16,6 +17,12 @@ export async function PageRouter() {
     console.log("relatedProducts", relatedProducts);
     root.innerHTML = ProductDetailPage({ product, relatedProducts });
     attachEvents(); // ProductDetailPage 렌더 후에만 attachEvents 호출
+    return;
+  }
+
+  const errorMatch = path.match(/^\/non-existent-page/);
+  if (errorMatch) {
+    root.innerHTML = ErrorPage();
     return;
   }
 

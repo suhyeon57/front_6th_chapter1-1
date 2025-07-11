@@ -479,6 +479,8 @@ async function main() {
   } else if (/^\/product\/\d+/.test(window.location.pathname)) {
     //render();
     await PageRouter(); // 반드시 await!
+  } else if (window.location.pathname === "/non-existent-page") {
+    PageRouter(); // NotFoundPage 렌더링
   } else {
     render();
     fetchAndRender();
