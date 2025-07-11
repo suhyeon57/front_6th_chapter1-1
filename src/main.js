@@ -2,11 +2,15 @@ import { HomePage } from "./pages/HomePage.js";
 import { getCategories, getProducts } from "./api/productApi.js";
 import { ProductCard } from "./pages/components/ProductCard.js";
 import { PageRouter } from "./pages/route/PageRouter.js";
+const base = import.meta.env.BASE_URL || "/";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
     worker.start({
       onUnhandledRequest: "bypass",
+      serviceWorker: {
+        url: `${base}mockServiceWorker.js`,
+      },
     }),
   );
 
