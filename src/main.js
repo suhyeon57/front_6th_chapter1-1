@@ -48,7 +48,7 @@ function render() {
   if (saveLimit) {
     state.limit = parseInt(saveLimit, 10); // 로컬 스토리지에서 페이지당 상품 수 불러오기
   }
-  // if (path === "/") {
+
   root.innerHTML = HomePage({
     ...state, // 상태를 HomePage에 전달
     selectedCategory, // 선택된 카테고리 상태 전달
@@ -86,7 +86,7 @@ function renderProductList() {
 }
 
 //버튼, limit, sort 클릭 시 동작
-function attachEvents() {
+export function attachEvents() {
   // limit, sort 변경 이벤트
   const limitSelect = document.querySelector("#limit-select");
   const sortSelect = document.getElementById("sort-select");
@@ -183,15 +183,15 @@ function attachEvents() {
   });
   //이미지 클릭 시 상세 페이지 이동 이벤트
   document.querySelectorAll(".product-image").forEach((card) => {
-    card.addEventListener("click", (e) => {
+    card.addEventListener("click", async (e) => {
       const productId = e.target.closest(".product-card").dataset.productId;
       history.pushState({}, "", `/product/${productId}`);
-      PageRouter();
+      await PageRouter();
       removeInfiniteScroll();
     });
   });
 
-  document.addEventListener("click", (e) => {
+  document.addEventListener("click", async (e) => {
     const cardElem = e.target.closest(".related-product-card");
     if (cardElem) {
       const productId = cardElem.dataset.productId;
@@ -201,8 +201,8 @@ function attachEvents() {
       }
       console.log("✅ 이동할 productId:", productId);
       history.pushState({}, "", `/product/${productId}`);
-      PageRouter();
-      removeInfiniteScroll && removeInfiniteScroll();
+      await PageRouter();
+      removeInfiniteScroll();
     }
   });
 
@@ -454,13 +454,20 @@ function syncStateWithUrl() {
 // 애플리케이션 시작
 async function main() {
   syncStateWithUrl(); // URL 파라미터로 상태 동기화
+
   state.isFirstLoad = true;
 
   if (window.location.pathname === "/") {
     setupInfiniteScroll();
+    render();
+    fetchAndRender();
+  } else if (/^\/product\/\d+/.test(window.location.pathname)) {
+    //render();
+    await PageRouter(); // 반드시 await!
+  } else {
+    render();
+    fetchAndRender();
   }
-  render();
-  fetchAndRender();
 
   window.addEventListener("popstate", async () => {
     syncStateWithUrl();
@@ -487,7 +494,7 @@ async function main() {
       await PageRouter(); // 반드시 await!
     } else {
       removeInfiniteScroll();
-      render();
+      fetchAndRender();
     }
   });
 }
