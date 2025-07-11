@@ -4,11 +4,14 @@ import { ProductCard } from "./pages/components/ProductCard.js";
 import { PageRouter } from "./pages/route/PageRouter.js";
 
 const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
+
+// const enableMocking = () =>
+//   import("./mocks/browser.js").then(({ worker }) =>
+//     worker.start({
+//       onUnhandledRequest: "bypass",
+//     }),
+//   );
 
 // 초기 상태 설정
 let state = {
@@ -517,6 +520,11 @@ async function main() {
 }
 
 // 애플리케이션 시작
+// if (import.meta.env.MODE !== "test") {
+//   enableMocking().then(main);
+// } else {
+//   main();
+// }
 if (import.meta.env.MODE !== "test") {
   enableMocking().then(main);
 } else {
