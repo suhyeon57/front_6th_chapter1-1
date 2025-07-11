@@ -52,8 +52,7 @@ const getFullPath = (appPath) => {
   return BASE_PATH + appPath;
 };
 
-export async function PageRouter(state, selectedCategory) {
-  console.log("PageRouter 호출", state, selectedCategory);
+export async function PageRouter() {
   const root = document.getElementById("root");
   const appPath = getAppPath();
 
@@ -72,12 +71,14 @@ export async function PageRouter(state, selectedCategory) {
     return;
   }
 
-  // 기본(홈) 페이지
-  root.innerHTML = HomePage({
-    // ...state,
-    // selectedCategory,
-  });
-  //attachEvents();
+  if (appPath === "/front_6th_chapter1-1/") {
+    // 기본(홈) 페이지
+    root.innerHTML = HomePage({
+      // ...state,
+      // selectedCategory,
+    });
+    //attachEvents();
+  }
 }
 
 // 내보내기
