@@ -87,6 +87,7 @@ function renderProductList() {
 
 //버튼, limit, sort 클릭 시 동작
 export function attachEvents() {
+  console.log("attachEvents 호출됨");
   // limit, sort 변경 이벤트
   const limitSelect = document.querySelector("#limit-select");
   const sortSelect = document.getElementById("sort-select");
@@ -185,25 +186,12 @@ export function attachEvents() {
   document.querySelectorAll(".product-image").forEach((card) => {
     card.addEventListener("click", async (e) => {
       const productId = e.target.closest(".product-card").dataset.productId;
+      console.log("이동할 productId:", productId);
       history.pushState({}, "", `/product/${productId}`);
+      //attachEvents(); // 이벤트 재연결
       await PageRouter();
       removeInfiniteScroll();
     });
-  });
-
-  document.addEventListener("click", async (e) => {
-    const cardElem = e.target.closest(".related-product-card");
-    if (cardElem) {
-      const productId = cardElem.dataset.productId;
-      if (!productId) {
-        console.log("❌ productId가 없습니다.", cardElem);
-        return;
-      }
-      console.log("✅ 이동할 productId:", productId);
-      history.pushState({}, "", `/product/${productId}`);
-      await PageRouter();
-      removeInfiniteScroll();
-    }
   });
 
   // 카테고리 버튼 클릭 이벤트
@@ -284,6 +272,17 @@ document.addEventListener("click", (e) => {
     if (value > 1) input.value = value - 1;
   }
 });
+
+document.addEventListener("click", async (e) => {
+  const cardElem = e.target.closest(".related-product-card");
+  if (cardElem) {
+    const productId = cardElem.dataset.productId;
+    console.log("✅ 이동할 productId:", productId);
+    history.pushState({}, "", `/product/${productId}`);
+    await PageRouter();
+    removeInfiniteScroll();
+  }
+});
 // 데이터 fetch 및 렌더링 함수
 async function fetchAndRender() {
   state.loading = true;
@@ -319,6 +318,22 @@ async function fetchAndRender() {
   render();
 }
 
+export async function getRelatedProducts(product) {
+  let relatedPd = [];
+  // 같은 카테고리의 상품 목록을 불러옴
+  console.log("getRelatedProducts 호출", product);
+  const { category1, category2, productId } = product;
+  const data = await getProducts({
+    category1,
+    category2,
+    limit: 10, // 원하는 만큼
+  });
+  console.log("getRelatedProducts 데이터", data);
+  // 본인 상품은 제외
+  relatedPd = data.products.filter((item) => item.productId !== productId);
+  console.log("getRelatedProducts 결과", relatedPd);
+  return relatedPd;
+}
 // 무한 스크롤 설정
 let isFetching = false;
 let infiniteScrollHandler = null;

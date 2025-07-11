@@ -2,6 +2,8 @@ import { getProduct } from "../../api/productApi.js";
 import { HomePage } from "../HomePage.js";
 import { ProductDetailPage } from "../ProductDetailPage.js";
 import { attachEvents } from "../../main.js";
+import { getRelatedProducts } from "../../main.js";
+
 export async function PageRouter() {
   const root = document.getElementById("root");
   const path = window.location.pathname;
@@ -10,8 +12,10 @@ export async function PageRouter() {
   if (productDetailMatch) {
     const productId = productDetailMatch[1];
     const product = await getProduct(productId);
-    root.innerHTML = ProductDetailPage({ product });
-    attachEvents();
+    const relatedProducts = await getRelatedProducts(product);
+    console.log("relatedProducts", relatedProducts);
+    root.innerHTML = ProductDetailPage({ product, relatedProducts });
+    attachEvents(); // ProductDetailPage 렌더 후에만 attachEvents 호출
     return;
   }
 
@@ -20,4 +24,6 @@ export async function PageRouter() {
     // ...state,
     // selectedCategory,
   });
+
+  // //attachEvents();
 }
