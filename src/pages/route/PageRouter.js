@@ -42,7 +42,7 @@ import { attachEvents } from "../../main.js";
 import { getRelatedProducts } from "../../main.js";
 import { ErrorPage } from "../ErrorPage.js";
 
-const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+const BASE_PATH = import.meta.env.BASE_URL ? "/front_6th_chapter1-1" : "";
 
 const getAppPath = (fullPath = window.location.pathname) => {
   return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
@@ -66,19 +66,27 @@ export async function PageRouter() {
     return;
   }
 
-  if (appPath === "/non-existent-page") {
-    root.innerHTML = ErrorPage();
+  // if (appPath === "/non-existent-page") {
+  //   root.innerHTML = ErrorPage();
+  //   return;
+  // }
+
+  // if (appPath === "/front_6th_chapter1-1/") {
+  //   // 기본(홈) 페이지
+  //   root.innerHTML = HomePage({
+  //     // ...state,
+  //     // selectedCategory,
+  //   });
+  //   //attachEvents();
+  // }
+
+  if (appPath === "/" || appPath === "/front_6th_chapter1-1/") {
+    root.innerHTML = HomePage({});
     return;
   }
 
-  if (appPath === "/front_6th_chapter1-1/") {
-    // 기본(홈) 페이지
-    root.innerHTML = HomePage({
-      // ...state,
-      // selectedCategory,
-    });
-    //attachEvents();
-  }
+  // 그 외 모든 경로는 에러 페이지
+  root.innerHTML = ErrorPage();
 }
 
 // 내보내기

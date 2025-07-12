@@ -2,6 +2,7 @@ import { HomePage } from "./pages/HomePage.js";
 import { getCategories, getProducts } from "./api/productApi.js";
 import { ProductCard } from "./pages/components/ProductCard.js";
 import { PageRouter } from "./pages/route/PageRouter.js";
+import { ErrorPage } from "./pages/ErrorPage.js";
 const base = import.meta.env.BASE_URL || "/";
 
 const enableMocking = () =>
@@ -63,10 +64,14 @@ function render() {
 }
 
 function makeUrl() {
-  let url = "/";
-  if (state.search) url += `search=${encodeURIComponent(state.search)}/`;
-  if (state.limit) url += `limit=${state.limit}/`;
-  if (state.sort) url += `sort=${state.sort}/`;
+  let url = base;
+  let params = [];
+  if (state.search) params.push(`search=${encodeURIComponent(state.search)}`);
+  if (state.limit) params.push(`limit=${state.limit}`);
+  if (state.sort) params.push(`sort=${state.sort}`);
+  if (params.length > 0) {
+    url += "?" + params.join("&");
+  }
   return url;
 }
 
@@ -476,23 +481,20 @@ async function main() {
 
   state.isFirstLoad = true;
 
-  if (window.location.pathname === "/") {
+  if (window.location.pathname === base) {
     setupInfiniteScroll();
     render();
     fetchAndRender();
-  } else if (/^\/product\/\d+/.test(window.location.pathname)) {
+  } else if (window.location.pathname.startsWith(`${base}product/`)) {
     //render();
     await PageRouter(); // 반드시 await!
-  } else if (window.location.pathname === "/non-existent-page") {
-    PageRouter(); // NotFoundPage 렌더링
   } else {
-    render();
-    fetchAndRender();
+    ErrorPage(); // 잘못된 경로일 경우 에러 페이지 렌더링
   }
 
   window.addEventListener("popstate", async () => {
     syncStateWithUrl();
-    if (window.location.pathname === "/") {
+    if (window.location.pathname === base) {
       state = {
         products: [],
         total: 0,
@@ -510,12 +512,12 @@ async function main() {
       };
       setupInfiniteScroll();
       fetchAndRender();
-    } else if (/^\/product\/\d+/.test(window.location.pathname)) {
+    } else if (window.location.pathname.startsWith(`${base}product/`)) {
       removeInfiniteScroll();
       await PageRouter(); // 반드시 await!
     } else {
       removeInfiniteScroll();
-      fetchAndRender();
+      ErrorPage(); // 잘못된 경로일 경우 에러 페이지 렌더링
     }
   });
 }
