@@ -2,7 +2,6 @@ import { HomePage } from "./pages/HomePage.js";
 import { getCategories, getProducts } from "./api/productApi.js";
 import { ProductCard } from "./pages/components/ProductCard.js";
 import { PageRouter } from "./pages/route/PageRouter.js";
-import { ErrorPage } from "./pages/ErrorPage.js";
 const base = import.meta.env.BASE_URL || "/";
 
 const enableMocking = () =>
@@ -489,7 +488,7 @@ async function main() {
     //render();
     await PageRouter(); // 반드시 await!
   } else {
-    ErrorPage(); // 잘못된 경로일 경우 에러 페이지 렌더링
+    PageRouter(); // 잘못된 경로일 경우 에러 페이지 렌더링
   }
 
   window.addEventListener("popstate", async () => {
@@ -517,7 +516,7 @@ async function main() {
       await PageRouter(); // 반드시 await!
     } else {
       removeInfiniteScroll();
-      ErrorPage(); // 잘못된 경로일 경우 에러 페이지 렌더링
+      PageRouter(); // 잘못된 경로일 경우 에러 페이지 렌더링
     }
   });
 }

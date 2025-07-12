@@ -1,4 +1,5 @@
 export function ProductDetailPage({ product, relatedProducts, loading }) {
+  console.log("현재페이지", window.location.pathname);
   if (loading) {
     return `
     <div class="min-h-screen bg-gray-50">
